@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	app                  = "binary"
+	app                  = "gator"
 	defaultInstallPrefix = "/usr/local"
-	envInstallPrefix     = "PROJECT_INSTALL_PREFIX"
-	envTestVerbose       = "PROJECT_TEST_VERBOSE"
-	envTestCover         = "PROJECT_TEST_COVER"
-	envBuildRebuildAll   = "PROJECT_BUILD_REBUILD_ALL"
-	envBuildVerbose      = "PROJECT_BUILD_VERBOSE"
+	envInstallPrefix     = "GATOR_INSTALL_PREFIX"
+	envTestVerbose       = "GATOR_TEST_VERBOSE"
+	envTestCover         = "GATOR_TEST_COVER"
+	envBuildRebuildAll   = "GATOR_BUILD_REBUILD_ALL"
+	envBuildVerbose      = "GATOR_BUILD_VERBOSE"
 )
 
 var (
@@ -29,8 +29,8 @@ var (
 )
 
 // Test run the go tests.
-// To enable verbose mode set PROJECT_TEST_VERBOSE=1.
-// To enable coverage mode set PROJECT_TEST_COVER=1.
+// To enable verbose mode set GATOR_TEST_VERBOSE=1.
+// To enable coverage mode set GATOR_TEST_COVER=1.
 func Test() error {
 	goTest := sh.RunCmd("go", "test")
 
@@ -53,8 +53,8 @@ func Lint() error {
 }
 
 // Build build the executable.
-// To rebuild packages that are already up-to-date set PROJECT_BUILD_REBUILD_ALL=1
-// To enable verbose mode set PROJECT_BUILD_VERBOSE=1
+// To rebuild packages that are already up-to-date set GATOR_BUILD_REBUILD_ALL=1
+// To enable verbose mode set GATOR_BUILD_VERBOSE=1
 func Build() error {
 	main := "main.go"
 	flags := ldflags()
