@@ -8,13 +8,10 @@ import (
 
 	"codeflow.dananglin.me.uk/apollo/gator/internal/config"
 	"codeflow.dananglin.me.uk/apollo/gator/internal/database"
+	"codeflow.dananglin.me.uk/apollo/gator/internal/executors"
+	"codeflow.dananglin.me.uk/apollo/gator/internal/state"
 	_ "github.com/lib/pq"
 )
-
-type state struct {
-	db     *database.Queries
-	config *config.Config
-}
 
 var (
 	binaryVersion string
@@ -41,49 +38,49 @@ func run() error {
 		return fmt.Errorf("unable to open a connection to the database: %w", err)
 	}
 
-	s := state{
-		db:     database.New(db),
-		config: &cfg,
+	s := state.State{
+		DB:     database.New(db),
+		Config: &cfg,
 	}
 
-	cmds := commands{
-		commandMap: make(map[string]commandFunc),
+	executorMap := executors.ExecutorMap{
+		Map: make(map[string]executors.ExecutorFunc),
 	}
 
-	cmds.register("login", handlerLogin)
-	cmds.register("register", handlerRegister)
-	cmds.register("reset", handlerReset)
-	cmds.register("users", handlerUsers)
-	cmds.register("agg", handlerAgg)
-	cmds.register("addfeed", middlewareLoggedIn(handlerAddFeed))
-	cmds.register("feeds", handlerFeeds)
-	cmds.register("follow", middlewareLoggedIn(handlerFollow))
-	cmds.register("unfollow", middlewareLoggedIn(handlerUnfollow))
-	cmds.register("following", middlewareLoggedIn(handlerFollowing))
-	cmds.register("browse", middlewareLoggedIn(handlerBrowse))
+	executorMap.Register("login", executors.Login)
+	executorMap.Register("register", executors.Register)
+	executorMap.Register("reset", executors.Reset)
+	executorMap.Register("users", executors.Users)
+	executorMap.Register("aggregate", executors.Aggregate)
+	executorMap.Register("addfeed", executors.MiddlewareLoggedIn(executors.AddFeed))
+	executorMap.Register("feeds", executors.Feeds)
+	executorMap.Register("follow", executors.MiddlewareLoggedIn(executors.Follow))
+	executorMap.Register("unfollow", executors.MiddlewareLoggedIn(executors.Unfollow))
+	executorMap.Register("following", executors.MiddlewareLoggedIn(executors.Following))
+	executorMap.Register("browse", executors.MiddlewareLoggedIn(executors.Browse))
 
-	cmd, err := parseArgs(os.Args[1:])
+	executor, err := parseArgs(os.Args[1:])
 	if err != nil {
 		return fmt.Errorf("unable to parse the command: %w", err)
 	}
 
-	return cmds.run(&s, cmd)
+	return executorMap.Run(&s, executor)
 }
 
-func parseArgs(args []string) (command, error) {
+func parseArgs(args []string) (executors.Executor, error) {
 	if len(args) == 0 {
-		return command{}, errors.New("no arguments given")
+		return executors.Executor{}, errors.New("no arguments given")
 	}
 
 	if len(args) == 1 {
-		return command{
-			name: args[0],
-			args: make([]string, 0),
+		return executors.Executor{
+			Name: args[0],
+			Args: make([]string, 0),
 		}, nil
 	}
 
-	return command{
-		name: args[0],
-		args: args[1:],
+	return executors.Executor{
+		Name: args[0],
+		Args: args[1:],
 	}, nil
 }

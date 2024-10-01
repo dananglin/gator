@@ -22,6 +22,7 @@ linters-settings:
         - $gostd
         - codeflow.dananglin.me.uk/apollo/gator
         - github.com/google/uuid
+        - github.com/lib/pq
   lll:
     line-length: 140
 
