@@ -56,7 +56,6 @@ func Lint() error {
 // To rebuild packages that are already up-to-date set GATOR_BUILD_REBUILD_ALL=1
 // To enable verbose mode set GATOR_BUILD_VERBOSE=1
 func Build() error {
-	main := "main.go"
 	flags := ldflags()
 	build := sh.RunCmd("go", "build")
 	args := []string{"-ldflags=" + flags, "-o", binary}
@@ -69,7 +68,7 @@ func Build() error {
 		args = append(args, "-v")
 	}
 
-	args = append(args, main)
+	args = append(args, ".")
 
 	return build(args...)
 }
